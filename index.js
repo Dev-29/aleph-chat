@@ -1,6 +1,7 @@
 import express from 'express'
 import mongoose, {mongo} from 'mongoose'
 import bodyParser from 'body-parser'
+const aleph = require('aleph-js')
 
 const expressSession = require('express-session')({
     secret: 'vit',
@@ -29,7 +30,11 @@ mongoose.connect('mongodb+srv://dev227:dev227@cluster0.yg7wejf.mongodb.net/chat?
 
 const userSchema = new mongoose.Schema({
     username: String,
-    password: String
+    password: String,
+    private_key: String,
+    public_key: String,
+    mnemonics: String,
+    address: String
 })
 
 userSchema.plugin(passportLocalMongoose)
@@ -61,7 +66,13 @@ app.post('/login', passport.authenticate('local'), (req, res) => {
 })
 
 app.post('/register', (req, res) => {
-    User.register({ username: req.body.username, active: false }, req.body.password, (err, user) => {
+    User.register({ username: req.body.username, active: false }, req.body.password, async (err, user) => {
+        const eth_account = await aleph.ethereum.new_account()
+        user.private_key = eth_account.private_key
+        user.public_key = eth_account.public_key
+        user.mnemonics = eth_account.mnemonics
+        user.address = eth_account.address
+        user.save()
         passport.authenticate('local')(req, res, () => {
             res.redirect('/')
         })
