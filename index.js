@@ -83,7 +83,6 @@ app.post('/messages', connectEnsureLogin.ensureLoggedIn(), (req, res) => {
     var message = req.body.message
 
     aleph.ethereum.import_account({ mnemonics: req.user.mnemonics }).then((account) => {
-        console.log(account)
         var room = 'hall'
         var api_server = 'https://api2.aleph.im'
         var network_id = 261
